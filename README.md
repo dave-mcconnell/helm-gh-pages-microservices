@@ -53,7 +53,7 @@ Defaults to `master`.
 - **destination-charts-folder**: The destination folder you want to copy the packages Helm chart to. 
 Defaults to `charts`.
 
-- **destination-charts-folder**: The version of Helm you're using - either v2 or v3. 
+- **helm-version**: The version of Helm you're using - either v2 or v3.
 Defaults to `v3`.
 
 ### Org or User Pages
