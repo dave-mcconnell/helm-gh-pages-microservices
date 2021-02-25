@@ -56,6 +56,9 @@ Defaults to `charts`.
 - **destination-charts-folder**: The version of Helm you're using - either v2 or v3. 
 Defaults to `v3`.
 
+- **helm-package-args**: Additional arguments to helm package command
+Defaults to ''
+
 ### Org or User Pages
 
 Create a repository with the format `<YOUR/ORG USERNAME>.github.io`, push your

@@ -17,6 +17,8 @@ async function run() {
     sourceBranch = sourceBranch.replace('refs/tags/', '')
     const sourceChartsDir = core.getInput('source-charts-folder') ? core.getInput('source-charts-folder') : 'charts';
 
+    const helmPackageArgs = core.getInput('helm-package-args');
+
     const destinationRepo = core.getInput('destination-repo');
     const destinationBranch = core.getInput('destination-branch') ? core.getInput('destination-branch') : 'master'
     const destinationChartsDir = core.getInput('destination-charts-folder') ?core.getInput('destination-charts-folder') : 'charts';
@@ -33,6 +35,7 @@ async function run() {
     console.log('Destination Repo:' + destinationRepo)
     console.log('Destination Branch:' + destinationBranch)
     console.log('Destination Charts Directory:' + destinationChartsDir)
+    console.log('Package args:' + helmPackageArgs)
 
     if (!accessToken) {
       core.setFailed(
@@ -56,7 +59,8 @@ async function run() {
     await CloneGitRepo(sourceRepo, sourceBranch, accessToken, 'sourceRepo')
     await CloneGitRepo(destinationRepo, destinationBranch, accessToken, 'destinationRepo')
 
-    await PackageHelmCharts(`./sourceRepo/${sourceChartsDir}`, `../../destinationRepo/${destinationChartsDir}`)
+    await PackageHelmCharts(`./${sourceChartsDir}`, `../destinationRepo/${destinationChartsDir}`, helmPackageArgs)
+
     await GenerateIndex()
     await AddCommitPushToGitRepo(`./destinationRepo`, `${github.context.sha}`, destinationBranch)
 
@@ -104,13 +108,18 @@ const CloneGitRepo = async (repoName, branchName, accessToken, cloneDirectory) =
 
 }
 
-const PackageHelmCharts = async (chartsDir, destinationChartsDir) => {
+const PackageHelmCharts = async (chartsDir, destinationChartsDir, helmArgs) => {
 
   const chartDirectories = getDirectories(path.resolve(chartsDir));
+
+  const args = helmArgs.split(" ")
 
   console.log('Charts dir content');
   await exec.exec(`ls`, ['-I ".*"'], { cwd: chartsDir });
   for (const chartDirname of chartDirectories) {
+
+    var chartArgs = [chartDirname, '--destination', destinationChartsDir]
+    var packageArgs = chartArgs.concat(args)
 
     console.log(`Resolving helm chart dependency in directory ${chartDirname}`);
     await exec.exec(
@@ -122,7 +131,7 @@ const PackageHelmCharts = async (chartsDir, destinationChartsDir) => {
     console.log(`Packaging helm chart in directory ${chartDirname}`);
     await exec.exec(
       `helm package`,
-      [chartDirname, '--destination', destinationChartsDir],
+      packageArgs,
       { cwd: chartsDir }
     );
   }

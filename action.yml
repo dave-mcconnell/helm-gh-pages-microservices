@@ -26,6 +26,10 @@ inputs:
     description: 'The version of Helm being used - either v2 or v3'
     required: false
     default: 'v3'
+  helm-package-args:
+    description: 'Additional args to helm package command'
+    required: false
+    default: ''
 runs:
   using: 'node12'
   main: 'index.js'
